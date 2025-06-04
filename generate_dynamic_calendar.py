@@ -1,8 +1,15 @@
 
 import re
 from datetime import datetime, timedelta
+import calendar
 
-# Bible reading plan for 30 days of June
+# Dynamic month/year from system date
+today = datetime.now()
+year = today.year
+month = today.month
+days_in_month = calendar.monthrange(year, month)[1]
+
+# Customize this to your reading template if it changes per month
 reading_plan = [
     "可一1-11/詩41/撒下9-10", "可一12-20/詩42/撒下11-12", "可一21-34/詩43/撒下13-14",
     "可一35-45/詩44/撒下15-16", "可二1-12/詩45/撒下17-18", "可二13-20/詩46/撒下19-20",
@@ -16,17 +23,15 @@ reading_plan = [
     "可八31-38/詩68/王下17-18", "可九1-13/詩69/王下19-20", "可九14-22/詩70/王下21-22"
 ]
 
-# Mapping book names to bible.com codes
+reading_plan = reading_plan[:days_in_month]
+
 book_url_map = {
     "可": "MRK", "詩": "PSA", "撒下": "2SA", "王上": "1KI", "王下": "2KI"
 }
-
-# Chinese to Arabic number conversion
 chinese_to_arabic = {
     "一": "1", "二": "2", "三": "3", "四": "4", "五": "5", "六": "6", "七": "7",
     "八": "8", "九": "9", "十": "10"
 }
-
 def convert_chinese_number(ch):
     for c, d in chinese_to_arabic.items():
         ch = ch.replace(c, d)
@@ -50,12 +55,12 @@ def make_bible_link(part):
 def format_datetime(dt):
     return dt.strftime("%Y%m%dT070000")
 
-# Start generating ICS
+# ICS content generation
 calendar_header = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n"
 calendar_footer = "END:VCALENDAR"
-start_date = datetime(2025, 6, 1)
+start_date = datetime(year, month, 1)
 events = []
-
+# entry: 可一1-11/詩41/撒下9-10
 for i, entry in enumerate(reading_plan):
     event_date = start_date + timedelta(days=i)
     formatted_date = format_datetime(event_date)
@@ -73,9 +78,10 @@ END:VEVENT
 """
     events.append(event)
 
+ics_filename = f"bible-plan-{year}-{month:02}.ics"
 ics_content = calendar_header + "".join(events) + calendar_footer
 
-with open("june-bible-plan.ics", "w", encoding="utf-8") as f:
+with open(ics_filename, "w", encoding="utf-8") as f:
     f.write(ics_content)
 
-print("✅ Calendar file generated: june-bible-plan.ics")
+print(f"✅ Calendar file generated: {ics_filename}")
